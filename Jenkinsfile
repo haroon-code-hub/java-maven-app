@@ -27,7 +27,7 @@ pipeline {
                 script {
                     buildImage 'saeedha/java-maven-app:jma-3.0'
                     dockerLogin()
-                    dockerPush 'saeedha/java-maven-app:jma-3.1'
+                    dockerPush 'saeedha/java-maven-app:jma-3.0'
                 }
             }
         }
