@@ -22,10 +22,12 @@ pipeline {
             }
         }
 
-        stage("build image") {
+        stage("build and push image") {
             steps {
                 script {
                     buildImage 'saeedha/java-maven-app:jma-3.0'
+                    dockerLogin()
+                    dockerPush 'saeedha/java-maven-app:jma-3.1'
                 }
             }
         }
