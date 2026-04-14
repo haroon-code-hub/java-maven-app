@@ -7,15 +7,16 @@ pipeline {
         stage('test') {
             steps {
                 script {
+                    def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH?.replaceFirst('^origin/', '') ?: 'main'
                     echo 'Testing the application...'
-                    echo "executing the pipeline for branch  $BRANCH_NAME"
+                    echo "executing the pipeline for branch ${branchName}"
                 }
             }
         }
         stage('build jar') {
             when{
                 expression{
-                    BRANCH_NAME == "main"
+                    (env.BRANCH_NAME ?: env.GIT_BRANCH?.replaceFirst('^origin/', '') ?: 'main') == "main"
                 }
             }
             steps {
@@ -28,7 +29,7 @@ pipeline {
         stage('build image') {
             when{
                 expression{
-                    BRANCH_NAME == "main"
+                    (env.BRANCH_NAME ?: env.GIT_BRANCH?.replaceFirst('^origin/', '') ?: 'main') == "main"
                 }
             }
             steps {
@@ -45,7 +46,7 @@ pipeline {
         stage('deploy') {
             when{
                 expression{
-                    BRANCH_NAME == "main"
+                    (env.BRANCH_NAME ?: env.GIT_BRANCH?.replaceFirst('^origin/', '') ?: 'main') == "main"
                 }
             }
             steps {
@@ -56,4 +57,3 @@ pipeline {
         }
     }
 }
-
