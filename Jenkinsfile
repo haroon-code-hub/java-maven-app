@@ -1,59 +1,41 @@
-pipeline {
+@library('jenkins-shared-library')
+def gv
+
+pipeline {   
     agent any
-    tools{
-        maven 'maven-3.9'
+    tools {
+        maven 'Maven'
     }
     stages {
-        stage('test') {
+        stage("init") {
             steps {
                 script {
-                    echo 'Testing the application...'
-                    echo "executing the pipeline for branch  $BRANCH_NAME"
+                    gv = load "script.groovy"
                 }
             }
         }
-        stage('build jar') {
-            when{
-                expression{
-                    BRANCH_NAME == "main"
-                }
-            }
+        stage("build jar") {
             steps {
                 script {
-                    echo 'building the application...'
-                    sh 'mvn package'
+                    buildJar()
                 }
             }
         }
-        stage('build image') {
-            when{
-                expression{
-                    BRANCH_NAME == "main"
-                }
-            }
-            steps {
-                script {
-                    echo 'building the docker image...'
-                    withCredentials([usernamePassword(credentialsId:'docker-hub-creds', passwordVariable:'PASS', usernameVariable:'USER')]){
-                        sh 'docker build -t saeedha/java-maven-app:jma-2.0 .'
-                        sh 'echo $PASS | docker login -u $USER --password-stdin'
-                        sh "docker push saeedha/java-maven-app:jma-2.0"
-                    }
-                }
-            }
-        }
-        stage('deploy') {
-            when{
-                expression{
-                    BRANCH_NAME == "main"
-                }
-            }
-            steps {
-                script {
-                    echo 'deploying docker image...'
-                }
-            }
-        }
-    }
-}
 
+        stage("build image") {
+            steps {
+                script {
+                    buildImage()
+                }
+            }
+        }
+
+        stage("deploy") {
+            steps {
+                script {
+                    gv.deployApp()
+                }
+            }
+        }               
+    }
+} 
