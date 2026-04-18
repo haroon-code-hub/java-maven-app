@@ -73,12 +73,14 @@ pipeline {
         stage('commit version update') {
             when{
                 expression{
-                    (env.BRANCH_NAME ?: env.GIT_BRANCH?.replaceFirst('^origin/', '') ?: 'main') == "main"
+                    def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH?.replaceFirst('^origin/', '') ?: 'main'
+                    def lastCommit = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
+                    branchName == "main" && lastCommit != "ci: version bump"
                 }
             }
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId:'git-credentials', passwordVariable:'PASS', usernameVariable:'USER')]){
+                    withCredentials([usernamePassword(credentialsId:'git-credentials', passwordVariable:'GIT_PASS', usernameVariable:'GIT_USER')]){
                         sh 'git config --global user.email "jenkins@example.com"'
                         sh 'git config --global user.name "jenkins"'
 
@@ -86,10 +88,12 @@ pipeline {
                         sh 'git branch'
                         sh 'git config --list'
 
-                        sh "git remote set-url origin https://${USER}:${PASS}@github.com/haroon-code-hub/java-maven-app"
-                        sh 'git add .'
+                        sh 'git remote set-url origin https://${GIT_USER}:${GIT_PASS}@github.com/haroon-code-hub/java-maven-app.git'
+                        sh 'git checkout -B main'
+                        sh 'git add pom.xml'
                         sh 'git commit -m "ci: version bump"'
-                        sh 'git push origin HEAD:main'
+                        sh 'git pull --rebase origin main'
+                        sh 'git push origin main'
                     }
                 }
             }
