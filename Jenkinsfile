@@ -58,18 +58,7 @@ pipeline {
                 }
             }
         }
-        stage('deploy') {
-            when{
-                expression{
-                    (env.BRANCH_NAME ?: env.GIT_BRANCH?.replaceFirst('^origin/', '') ?: 'main') == "main"
-                }
-            }
-            steps {
-                script {
-                    echo 'deploying docker image...'
-                }
-            }
-        }
+
         stage('commit version update') {
             when{
                 expression{
@@ -94,6 +83,21 @@ pipeline {
                         sh 'git commit -m "ci: version bump"'
                         sh 'git pull --rebase origin main'
                         sh 'git push origin main'
+                    }
+                }
+            }
+        }
+        stage('deploy') {
+            when{
+                expression{
+                    (env.BRANCH_NAME ?: env.GIT_BRANCH?.replaceFirst('^origin/', '') ?: 'main') == "main"
+                }
+            }
+            steps {
+                script {
+                    def dockerCMD = 'docker run -p 8080:8080 -d saeedha/java-maven-app:1.1.10-5'
+                    sshagent(['ec2-server-key']) {
+                       sh "ssh -o StrictHostKeyChecking=no ec2-user@54.157.58.253 ${dockerCMD}"
                     }
                 }
             }
