@@ -95,10 +95,10 @@ pipeline {
             }
             steps {
                 script {
-                    def shellCmd ="bash ./server-commands.sh ${IMAGE_NAME}"
+                    def shellCmd ="bash ./server-commands.sh saeedha/java-maven-app:${IMAGE_NAME}"
                     withCredentials([sshUserPrivateKey(credentialsId: 'ec2-server-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-                        sh "scp server-commands.sh ec2-user@54.157.58.253:/home/ec2-user"
-                        sh "scp docker-compose.yaml ec2-user@54.157.58.253:/home/ec2-user"
+                        sh "scp -i \$SSH_KEY -o StrictHostKeyChecking=no server-commands.sh \$SSH_USER@54.157.58.253:/home/ec2-user"
+                        sh "scp -i \$SSH_KEY -o StrictHostKeyChecking=no docker-compose.yaml \$SSH_USER@54.157.58.253:/home/ec2-user"
                         sh "ssh -i \$SSH_KEY -o StrictHostKeyChecking=no \$SSH_USER@54.157.58.253 '${shellCmd}'"
                     }
                 }
