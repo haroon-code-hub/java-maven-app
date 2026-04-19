@@ -95,9 +95,9 @@ pipeline {
             }
             steps {
                 script {
-                    def dockerCMD = 'docker run -p 8080:8080 -d saeedha/java-maven-app:1.1.10-5'
-                    sshagent(['ec2-server-key']) {
-                       sh "ssh -o StrictHostKeyChecking=no ec2-user@54.157.58.253 ${dockerCMD}"
+                    def dockerCMD = "docker run -p 8080:8080 -d saeedha/java-maven-app:${IMAGE_NAME}"
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ec2-server-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+                       sh "ssh -i \$SSH_KEY -o StrictHostKeyChecking=no \$SSH_USER@54.157.58.253 '${dockerCMD}'"
                     }
                 }
             }
