@@ -87,7 +87,7 @@ pipeline {
                 }
             }
         }
-        stage('deploy') {
+        stage('deploying docker image to EC2 server') {
             when{
                 expression{
                     (env.BRANCH_NAME ?: env.GIT_BRANCH?.replaceFirst('^origin/', '') ?: 'main') == "main"
@@ -95,9 +95,11 @@ pipeline {
             }
             steps {
                 script {
-                    def dockerCMD = "docker run -p 8080:8080 -d saeedha/java-maven-app:${IMAGE_NAME}"
+                    def shellCmd ="bash ./server-commands.sh ${IMAGE_NAME}"
                     withCredentials([sshUserPrivateKey(credentialsId: 'ec2-server-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-                       sh "ssh -i \$SSH_KEY -o StrictHostKeyChecking=no \$SSH_USER@54.157.58.253 '${dockerCMD}'"
+                        sh "scp server-commands.sh ec2-user@54.157.58.253:/home/ec2-user"
+                        sh "scp docker-compose.yaml ec2-user@54.157.58.253:/home/ec2-user"
+                        sh "ssh -i \$SSH_KEY -o StrictHostKeyChecking=no \$SSH_USER@54.157.58.253 '${shellCmd}'"
                     }
                 }
             }
